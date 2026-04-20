@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SmartShoppingAssistant.DataAccess.Entities
+﻿namespace SmartShoppingAssistant.DataAccess.Entities
 {
     public class Category
     {
@@ -12,6 +8,8 @@ namespace SmartShoppingAssistant.DataAccess.Entities
 
         public string Description { get; set; } = null!;
 
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
+
+        public ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
     }
 }
