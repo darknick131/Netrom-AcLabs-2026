@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartShoppingAssistant.DataAccess")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d859fd24f63cfce8a8cb53d4d31234ce15f86ae6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d7dceecf2209bcafa9e259349ac103e9f1ea6dd")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartShoppingAssistant.DataAccess")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartShoppingAssistant.DataAccess")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
