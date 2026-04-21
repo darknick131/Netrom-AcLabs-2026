@@ -1,14 +1,7 @@
-﻿namespace SmartShoppingAssistant.DataAccess.Entities
-{
-    public enum PromotionType
-    {
-        // TO DO: define promotion types
-    }
+﻿using SmartShoppingAssistant.DataAccess.Entities.Enums;
 
-    public enum PromotionReward
-    {
-        // TO DO: define promotion rewards
-    }
+namespace SmartShoppingAssistant.DataAccess.Entities
+{
     public class Promotion
     {
         public int Id { get; set; }

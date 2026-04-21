@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SmartShoppingAssistant.DataAccess;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -5,6 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// il ia din appsettings.json   -> ConnectionStrings:SmartShoppingAssistantContext
+var connectionString = builder.Configuration.GetConnectionString("SmartShoppingAssistantContext");
+
+builder.Services.AddDbContext<SmartShoppingAssistantDbContext>(options => options.UseSqlServer(connectionString));
+
 
 var app = builder.Build();
 

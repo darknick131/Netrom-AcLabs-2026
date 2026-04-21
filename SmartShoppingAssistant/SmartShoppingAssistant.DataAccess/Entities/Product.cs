@@ -14,7 +14,7 @@
 
         public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
 
-        public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+        public CartItem cartItem { get; set; } = null!;
 
         public ICollection<Promotion> Promotions { get; set; } = new List<Promotion>();
 

@@ -13,8 +13,8 @@ namespace SmartShoppingAssistant.DataAccess.Configurations
             builder.HasKey(ci => ci.Id);
 
             builder.HasOne(ci => ci.Product)
-                .WithMany(p => p.CartItems)
-                .HasForeignKey(ci => ci.ProductId);
+                .WithOne(p => p.cartItem)
+                .HasForeignKey<CartItem>(ci => ci.ProductId);
 
             builder.Property(ci => ci.Quantity)
                 .IsRequired();
