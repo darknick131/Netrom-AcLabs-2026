@@ -1,1 +1,6 @@
 /SmartShoppingAssistant/.vs
+/SmartShoppingAssistant/SmartShoppingAssistant.Api/bin
+/SmartShoppingAssistant/SmartShoppingAssistant.Api/obj
+
+/SmartShoppingAssistant/SmartShoppingAssistant.DataAccess/obj
+
