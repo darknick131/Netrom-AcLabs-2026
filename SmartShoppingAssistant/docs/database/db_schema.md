@@ -56,3 +56,6 @@
 | Id        | PK   |             | int       |
 | ProductId | FK   |             | int       |
 | Quantity  |      | REQ         | int       |
+
+
+Exista un singur cart 
