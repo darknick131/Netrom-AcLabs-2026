@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using SmartShoppingAssistant.BusinessLogic.Services;
+using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 using SmartShoppingAssistant.DataAccess;
+using SmartShoppingAssistant.DataAccess.Entities;
+using SmartShoppingAssistant.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +18,9 @@ var connectionString = builder.Configuration.GetConnectionString("SmartShoppingA
 
 builder.Services.AddDbContext<SmartShoppingAssistantDbContext>(options => options.UseSqlServer(connectionString));
 
+// Register the repository for Product entity
+builder.Services.AddScoped<IRepository<Product>, BaseRepository<Product>>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
