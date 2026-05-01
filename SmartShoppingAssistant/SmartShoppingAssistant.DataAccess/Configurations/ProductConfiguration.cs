@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SmartShoppingAssistant.DataAccess.Entities;
 namespace SmartShoppingAssistant.DataAccess.Configurations
@@ -25,6 +25,10 @@ namespace SmartShoppingAssistant.DataAccess.Configurations
 
             builder.Property(p => p.ImageUrl)
                 .HasMaxLength(500);
+
+            builder.HasMany(p => p.Categories)
+                .WithMany(c => c.Products)
+                .UsingEntity<ProductCategory>();
         }
     }
 }

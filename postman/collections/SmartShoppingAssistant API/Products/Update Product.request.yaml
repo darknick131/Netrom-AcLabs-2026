@@ -1,0 +1,36 @@
+$kind: http-request
+name: Update Product
+method: PUT
+url: '{{baseUrl}}/api/products/{{createdProductId}}'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Test Product",
+      "description": "Updated description",
+      "price": 14.99,
+      "imageUrl": "https://example.com/updated-image.jpg"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response name equals 'Updated Test Product'", function () {
+              var jsonData = pm.response.json();
+              pm.expect(jsonData.name).to.eql("Updated Test Product");
+          });
+
+          pm.test("Response price equals 14.99", function () {
+              var jsonData = pm.response.json();
+              pm.expect(jsonData.price).to.eql(14.99);
+          });
+      }

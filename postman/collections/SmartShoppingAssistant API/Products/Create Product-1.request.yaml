@@ -1,0 +1,16 @@
+$kind: http-request
+name: Create Product
+url: "{{baseUrl}}/api/product"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\": \"Articol sportiv\",\r
+
+    \    \"description\": \"Tot ce iti trebuie ca sa duci o viata activa\"\r
+
+    \  }"
+order: 3530828986451215

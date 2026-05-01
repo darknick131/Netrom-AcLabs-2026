@@ -1,0 +1,6 @@
+name: Production
+values:
+  - key: baseUrl
+    value: 'https://localhost:7139'
+    enabled: true
+    type: default

@@ -1,0 +1,31 @@
+$kind: http-request
+name: Get All Products - Verify Seed Data
+method: GET
+url: '{{baseUrl}}/api/products'
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response is an array", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.be.an('array');
+      });
+
+      pm.test("Seed data exists - at least 4 products", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.length).to.be.at.least(4);
+      });
+
+      pm.test("Each item has id, name, price fields", function () {
+          var jsonData = pm.response.json();
+          jsonData.forEach(function(item) {
+              pm.expect(item).to.have.property('id');
+              pm.expect(item).to.have.property('name');
+              pm.expect(item).to.have.property('price');
+          });
+      });

@@ -6,13 +6,13 @@
 
         public string Name { get; set; } = null!;
 
-        public string Description { get; set; } = null!;
+        public string? Description { get; set; }
 
-        public string ImageUrl { get; set; } = null!;
+        public string? ImageUrl { get; set; }
 
         public decimal Price {  get; set; }
 
-        public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
+        public ICollection<Category> Categories { get; set; } = new List<Category>();
 
         public CartItem cartItem { get; set; } = null!;
 

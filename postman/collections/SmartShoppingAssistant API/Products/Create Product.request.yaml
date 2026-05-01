@@ -1,0 +1,43 @@
+$kind: http-request
+name: Create Product
+method: POST
+url: '{{baseUrl}}/api/products'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Test Product",
+      "description": "A test product created via Postman",
+      "price": 9.99,
+      "imageUrl": "https://example.com/image.jpg"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("Response has id field", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property('id');
+      });
+
+      pm.test("Response name equals 'Test Product'", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.name).to.eql("Test Product");
+      });
+
+      pm.test("Response price equals 9.99", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.price).to.eql(9.99);
+      });
+
+      if (pm.response.code === 201) {
+          pm.collectionVariables.set("createdProductId", pm.response.json().id);
+      }

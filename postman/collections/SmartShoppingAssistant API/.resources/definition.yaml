@@ -1,0 +1,7 @@
+$kind: collection
+name: SmartShoppingAssistant API
+variables:
+  - key: baseUrl
+    value: 'http://localhost:5221'
+  - key: createdProductId
+    value: ''

@@ -1,0 +1,12 @@
+$kind: http-request
+name: Delete Product
+method: DELETE
+url: '{{baseUrl}}/api/products/{{createdProductId}}'
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 204 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([204, 404]);
+      });

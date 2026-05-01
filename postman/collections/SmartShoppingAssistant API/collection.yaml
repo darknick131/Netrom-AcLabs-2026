@@ -1,0 +1,16 @@
+$kind: collection
+name: SmartShoppingAssistant API
+description: Collection for testing the SmartShoppingAssistant API endpoints. Covers CRUD operations for Products.
+item:
+  - name: Products
+    item:
+      - 'Products/Get All Products.request.yaml'
+      - 'Products/Get Products with Filters.request.yaml'
+      - 'Products/Get Product by ID.request.yaml'
+      - 'Products/Create Product.request.yaml'
+      - 'Products/Update Product.request.yaml'
+      - 'Products/Delete Product.request.yaml'
+variable:
+  - key: createdProductId
+    value: ''
+    type: string

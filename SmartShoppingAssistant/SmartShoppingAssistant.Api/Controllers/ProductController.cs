@@ -9,16 +9,80 @@ namespace SmartShoppingAssistant.Api.Controllers
     [ApiController]
     public class ProductsController(IProductService productService) : ControllerBase
     {
+        // GET /api/products/3
         [HttpGet("{id}")]
-        // image url de facut nullabke
-        // de pus postman
-        // de pus seed la categorii si produse
         public async Task<ActionResult<ProductGetDTO>> GetById(int id)
         {
             try
             {
                 var product = await productService.GetByIdAsync(id);
                 return Ok(product);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        // GET /api/products
+        [HttpGet]
+        public async Task<ActionResult<List<ProductGetDTO>>> GetAll()
+        {
+            try
+            {
+                var products = await productService.GetAllAsync();
+                return Ok(products);
+
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+
+        // POST /api/products
+        [HttpPost]
+        public async Task<ActionResult<ProductGetDTO>> Create([FromBody] ProductCreateDTO dto)
+        {
+            try
+            {
+                var createdProduct = await productService.CreateAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = createdProduct.Id }, createdProduct);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        // PUT /api/products/3
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ProductGetDTO>> Update(int id, [FromBody] ProductUpdateDTO dto)
+        {
+            try
+            {
+                var updatedProduct = await productService.UpdateAsync(id, dto);
+                return Ok(updatedProduct);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+
+        // DELETE /api/products/3
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            try
+            {
+                await productService.DeleteAsync(id);
+                return NoContent();
             }
             catch (Exception ex)
             {

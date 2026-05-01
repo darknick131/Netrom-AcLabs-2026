@@ -64,6 +64,26 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Băuturi răcoritoare și sucuri",
+                            Name = "Băuturi"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Gustări și dulciuri",
+                            Name = "Snacks"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Produse lactate",
+                            Name = "Lactate"
+                        });
                 });
 
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.Product", b =>
@@ -75,12 +95,10 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -96,6 +114,36 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Băutură carbogazoasă",
+                            Name = "Coca Cola 500ml",
+                            Price = 5.99m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Băutură carbogazoasă",
+                            Name = "Pepsi 500ml",
+                            Price = 5.49m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Chipsuri cu sare",
+                            Name = "Lay's Sare",
+                            Price = 7.99m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Iaurt 400g",
+                            Name = "Iaurt natural",
+                            Price = 4.50m
+                        });
                 });
 
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.ProductCategory", b =>
@@ -111,6 +159,28 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("ProductCategories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            ProductId = 1,
+                            CategoryId = 1
+                        },
+                        new
+                        {
+                            ProductId = 2,
+                            CategoryId = 1
+                        },
+                        new
+                        {
+                            ProductId = 3,
+                            CategoryId = 2
+                        },
+                        new
+                        {
+                            ProductId = 4,
+                            CategoryId = 3
+                        });
                 });
 
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.Promotion", b =>
@@ -171,13 +241,13 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.ProductCategory", b =>
                 {
                     b.HasOne("SmartShoppingAssistant.DataAccess.Entities.Category", "Category")
-                        .WithMany("ProductCategories")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SmartShoppingAssistant.DataAccess.Entities.Product", "Product")
-                        .WithMany("ProductCategories")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -206,15 +276,11 @@ namespace SmartShoppingAssistant.DataAccess.Migrations
 
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.Category", b =>
                 {
-                    b.Navigation("ProductCategories");
-
                     b.Navigation("Promotions");
                 });
 
             modelBuilder.Entity("SmartShoppingAssistant.DataAccess.Entities.Product", b =>
                 {
-                    b.Navigation("ProductCategories");
-
                     b.Navigation("Promotions");
 
                     b.Navigation("cartItem")

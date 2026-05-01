@@ -249,3 +249,11 @@ Signature
 ```
 SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
 ```
+
+
+
+# LABS 3
+
+-> product repository
+
+-> toate metodele CRUD de terminat la products, categories

@@ -1,11 +1,13 @@
-﻿namespace SmartShoppingAssistant.DataAccess.Repositories
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace SmartShoppingAssistant.DataAccess.Repositories
 {
     public class BaseRepository<TEntity>(SmartShoppingAssistantDbContext context) : IRepository<TEntity> where TEntity : class
     {
         // task e o operatie asincrona care returneaza o valoare
 
 
-        public async Task<TEntity> GetByIdAsync(int id)
+        public virtual async Task<TEntity> GetByIdAsync(int id)
         {
             try
             {
@@ -23,32 +25,66 @@
             }
         }
 
-        public Task<List<TEntity>> GetAllAsync()
+        public virtual async Task<List<TEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var entities = await context.Set<TEntity>().ToListAsync();
+
+                if(!entities.Any())
+                {
+                    throw new KeyNotFoundException("No entities found.");
+                }
+
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error retrieving all entities: {ex.Message}", ex);
+            }
         }
 
-        public async Task<TEntity> AddAsync(TEntity entity)
+        public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                // Adaugam entitatea in context
+                await context.Set<TEntity>().AddAsync(entity);
+                // Salvam modificarile in baza de date
+                await context.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            
+
+            return entity;
         }
 
-        public Task<TEntity> UpdateAsync(TEntity entity)
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            // operatia de update e async by default
+            context.Set<TEntity>().Update(entity);
+
+            await context.SaveChangesAsync();
+
+            return entity;
         }
 
-        public async Task<TEntity> DeleteAsync(int id)
+        public virtual async Task<TEntity> DeleteAsync(int id)
         {
             try
             {
                 var entity = await context.Set<TEntity>().FindAsync(id);
+
                 if (entity == null)
                 {
                     throw new KeyNotFoundException($"Entity with id {id} not found.");
                 }
 
                 context.Set<TEntity>().Remove(entity);
+
                 await context.SaveChangesAsync();
 
                 return entity;

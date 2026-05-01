@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartShoppingAssistant.DataAccess.Configurations;
 using SmartShoppingAssistant.DataAccess.Entities;
+using SmartShoppingAssistant.DataAccess.Seed;
 namespace SmartShoppingAssistant.DataAccess
 {
     public class SmartShoppingAssistantDbContext(DbContextOptions<SmartShoppingAssistantDbContext> options) : DbContext(options)
@@ -25,6 +26,10 @@ namespace SmartShoppingAssistant.DataAccess
             // modelBuilder.ApplyConfiguration(new ProductConfiguration());
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(SmartShoppingAssistantDbContext).Assembly);
+
+            CategorySeed.Seed(modelBuilder);
+            ProductSeed.Seed(modelBuilder);
+            ProductCategorySeed.Seed(modelBuilder);
         }
     }
 }

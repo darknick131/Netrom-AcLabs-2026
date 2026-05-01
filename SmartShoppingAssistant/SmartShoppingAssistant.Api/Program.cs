@@ -22,6 +22,10 @@ builder.Services.AddDbContext<SmartShoppingAssistantDbContext>(options => option
 builder.Services.AddScoped<IRepository<Product>, BaseRepository<Product>>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
+// Register the repository for Category entity
+builder.Services.AddScoped<IRepository<Category>, BaseRepository<Category>>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
