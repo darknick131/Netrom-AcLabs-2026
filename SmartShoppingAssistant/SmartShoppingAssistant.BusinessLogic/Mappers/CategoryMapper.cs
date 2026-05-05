@@ -1,8 +1,8 @@
-﻿using SmartShoppingAssistant.BusinessLogic.DTOs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using SmartShoppingAssistant.DataAccess.Entities;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Categories;
 
 namespace SmartShoppingAssistant.BusinessLogic.Mappers
 {

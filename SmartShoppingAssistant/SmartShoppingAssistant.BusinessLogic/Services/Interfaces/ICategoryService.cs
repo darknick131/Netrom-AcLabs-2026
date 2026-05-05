@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using SmartShoppingAssistant.BusinessLogic.DTOs;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Categories;
 
 
 namespace SmartShoppingAssistant.BusinessLogic.Services.Interfaces

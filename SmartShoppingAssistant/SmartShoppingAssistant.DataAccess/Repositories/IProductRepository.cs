@@ -13,5 +13,9 @@ namespace SmartShoppingAssistant.DataAccess.Repositories
 
         // get all products with all categories
         Task<List<Product>> GetAllProductsWithCategoriesAsync();
+
+        // get all products by one category
+
+        Task<List<Product>> GetAllProductsByCategoryAsync(int categoryId);
     }
 }

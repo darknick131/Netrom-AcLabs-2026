@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SmartShoppingAssistant.BusinessLogic.DTOs
+namespace SmartShoppingAssistant.BusinessLogic.DTOs.Categories
 {
-    public class CategoryUpdateDTO
+    public class CategoryCreateDTO
     {
         public string Name { get; set; } = null!;
+
         public string Description { get; set; } = null!;
     }
 }

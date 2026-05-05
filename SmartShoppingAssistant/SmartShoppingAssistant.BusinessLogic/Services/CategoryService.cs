@@ -1,13 +1,8 @@
-﻿using SmartShoppingAssistant.DataAccess.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SmartShoppingAssistant.BusinessLogic.DTOs.Categories;
 using SmartShoppingAssistant.BusinessLogic.Mappers;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 using SmartShoppingAssistant.DataAccess.Entities;
 using SmartShoppingAssistant.DataAccess.Repositories;
-using SmartShoppingAssistant.BusinessLogic.DTOs;
-using SmartShoppingAssistant.BusinessLogic.Mappers;
 
 namespace SmartShoppingAssistant.BusinessLogic.Services
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SmartShoppingAssistant.BusinessLogic.DTOs
+namespace SmartShoppingAssistant.BusinessLogic.DTOs.Product
 {
     public class ProductUpdateDTO
     {
@@ -11,5 +11,7 @@ namespace SmartShoppingAssistant.BusinessLogic.DTOs
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public string? ImageUrl { get; set; }
+
+        public List<int> CategoryIds { get; set; } = new List<int>();
     }
 }

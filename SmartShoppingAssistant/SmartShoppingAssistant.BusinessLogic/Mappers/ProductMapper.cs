@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using SmartShoppingAssistant.BusinessLogic.DTOs;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Product;
 using SmartShoppingAssistant.DataAccess.Entities;
 
 namespace SmartShoppingAssistant.BusinessLogic.Mappers
@@ -17,7 +17,11 @@ namespace SmartShoppingAssistant.BusinessLogic.Mappers
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                ImageUrl = product.ImageUrl
+                ImageUrl = product.ImageUrl,
+
+                 Categories = product.Categories
+                                    .Select(c => CategoryMapper.ToCategoryGetDTO(c))
+                                    .ToList()
             };
         }
 

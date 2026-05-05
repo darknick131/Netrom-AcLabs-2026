@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SmartShoppingAssistant.BusinessLogic.DTOs
+namespace SmartShoppingAssistant.BusinessLogic.DTOs.Product
 {
     public class ProductCreateDTO
     {

@@ -19,12 +19,22 @@ var connectionString = builder.Configuration.GetConnectionString("SmartShoppingA
 builder.Services.AddDbContext<SmartShoppingAssistantDbContext>(options => options.UseSqlServer(connectionString));
 
 // Register the repository for Product entity
-builder.Services.AddScoped<IRepository<Product>, BaseRepository<Product>>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
 // Register the repository for Category entity
 builder.Services.AddScoped<IRepository<Category>, BaseRepository<Category>>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+
+// Register the repository for Promotion entity
+builder.Services.AddScoped<IRepository<Promotion>, BaseRepository<Promotion>>();
+builder.Services.AddScoped<IPromotionService, PromotionService>();
+
+// cart entity
+builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
+builder.Services.AddScoped<ICartService, CartService>();
+
 
 var app = builder.Build();
 
@@ -34,7 +44,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // dezactivat pentru development local pe WSL2
 
 app.UseAuthorization();
 

@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SmartShoppingAssistant.BusinessLogic.DTOs;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Categories;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 
 namespace SmartShoppingAssistant.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/categories")]
     [ApiController]
     public class CategoryController(ICategoryService categoryService) : ControllerBase
     {
-        // GET /api/category/3
+        // GET /api/categories/3
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryGetDTO>> GetById(int id)
         {
@@ -24,7 +24,8 @@ namespace SmartShoppingAssistant.Api.Controllers
             }
         }
 
-        // GET /api/category
+        // GET /api/categories
+        [HttpGet]
         public async Task<ActionResult<List<CategoryGetDTO>>> GetAll()
         {
             try
@@ -53,8 +54,8 @@ namespace SmartShoppingAssistant.Api.Controllers
             }
         }
 
-        // PUT /api/category/3
-        [HttpPost("{id}")]
+        // PUT /api/categories/3
+        [HttpPut("{id}")]
         public async Task<ActionResult<CategoryGetDTO>> Update(int id, [FromBody] CategoryUpdateDTO dto)
         {
             try
@@ -64,7 +65,7 @@ namespace SmartShoppingAssistant.Api.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 

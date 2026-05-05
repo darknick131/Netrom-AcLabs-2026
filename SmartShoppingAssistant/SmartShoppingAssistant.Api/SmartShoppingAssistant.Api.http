@@ -1,6 +1,396 @@
-@SmartShoppingAssistant.Api_HostAddress = http://localhost:5221
+@baseUrl = http://localhost:5221
 
-GET {{SmartShoppingAssistant.Api_HostAddress}}/weatherforecast/
+# ============================================================
+#  CATEGORIES
+# ============================================================
+
+### GET toate categoriile
+GET {{baseUrl}}/api/categories
+Accept: application/json
+
+###
+
+### GET categorie după ID (ID=1 → Băuturi din seed)
+GET {{baseUrl}}/api/categories/1
+Accept: application/json
+
+###
+
+### GET categorie inexistentă (trebuie să returneze 404)
+GET {{baseUrl}}/api/categories/999
+Accept: application/json
+
+###
+
+### POST crează o categorie nouă
+## nu merge asta TO DO
+POST {{baseUrl}}/api/categories
+Content-Type: application/json
+
+{
+  "name": "Produse de Panificatie",
+  "description": "Pâine, cozonac și alte produse de brutărie"
+}
+
+###
+
+### PUT actualizează categoria cu ID=4 (cea creată mai sus)
+PUT {{baseUrl}}/api/categories/4
+Content-Type: application/json
+
+{
+  "name": "Panificație",
+  "description": "Pâine, cozonac, produse de brutărie și patiserie"
+}
+
+###
+
+### DELETE șterge categoria cu ID=4
+DELETE {{baseUrl}}/api/categories/4
+Accept: application/json
+
+###
+
+
+# ============================================================
+#  PRODUCTS
+# ============================================================
+
+### GET toate produsele (fără filtru)
+GET {{baseUrl}}/api/products
+Accept: application/json
+
+###
+
+### GET produse filtrate după categorie (CategoryId=1 → Băuturi)
+GET {{baseUrl}}/api/products?categoryId=1
+Accept: application/json
+
+###
+
+### GET produse filtrate după categorie (CategoryId=2 → Snacks)
+GET {{baseUrl}}/api/products?categoryId=2
+Accept: application/json
+
+###
+
+### GET produs după ID (ID=1 → Coca Cola 500ml)
+GET {{baseUrl}}/api/products/1
+Accept: application/json
+
+###
+
+### GET produs inexistent (trebuie să returneze 404)
+GET {{baseUrl}}/api/products/999
+Accept: application/json
+
+###
+
+### POST crează un produs nou într-o singură categorie
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Fanta Portocale 500ml",
+  "description": "Băutură carbogazoasă cu aromă de portocale",
+  "price": 5.49,
+  "imageUrl": null,
+  "categoryIds": [1]
+}
+
+###
+
+### POST crează un produs în mai multe categorii (many-to-many)
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Granola cu Iaurt",
+  "description": "Amestec de cereale cu iaurt liofilizat",
+  "price": 12.99,
+  "imageUrl": null,
+  "categoryIds": [2, 3]
+}
+
+###
+
+### POST crează produs fără categorii
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Apă plată 1.5L",
+  "description": null,
+  "price": 2.99,
+  "imageUrl": null,
+  "categoryIds": []
+}
+
+###
+
+### PUT actualizează produs (sincronizare categorii inclusă)
+### Produsul cu ID=5 (Fanta creat mai sus) → îl mutăm și în categoria Snacks
+PUT {{baseUrl}}/api/products/5
+Content-Type: application/json
+
+{
+  "name": "Fanta Portocale 500ml",
+  "description": "Băutură carbogazoasă cu aromă de portocale - editată",
+  "price": 5.99,
+  "imageUrl": null,
+  "categoryIds": [1, 2]
+}
+
+###
+
+### DELETE șterge produsul cu ID=5
+DELETE {{baseUrl}}/api/products/4
+Accept: application/json
+
+###
+
+
+# ============================================================
+#  PROMOTIONS
+# ============================================================
+#
+#  Enums:
+#    PromotionType  → Quantity=0 (număr de iteme), CartTotal=1 (valoare coș în lei)
+#    PromotionReward → FreeItems=0 (N iteme gratis), PercentDiscount=1 (N% reducere)
+#
+#  Scope:
+#    productId  → se aplică doar pe produsul respectiv
+#    categoryId → se aplică pe toate produsele din categorie
+#    ambele null → se aplică pe întreg coșul
+#
+# ============================================================
+
+### GET toate promoțiile
+GET {{baseUrl}}/api/promotions
+Accept: application/json
+
+###
+
+### GET promoție după ID
+GET {{baseUrl}}/api/promotions/1
+Accept: application/json
+
+###
+
+### POST promoție pe produs specific: cumperi 3 Coca Cola, primești 1 gratis
+### (ProductId=1, Type=Quantity, Threshold=3, Reward=FreeItems, RewardValue=1)
+POST {{baseUrl}}/api/promotions
+Content-Type: application/json
+
+{
+  "name": "3 Coca Cola + 1 Gratis",
+  "type": 0,
+  "threshold": 3,
+  "reward": 0,
+  "rewardValue": 1,
+  "productId": 1,
+  "categoryId": null,
+  "isActive": true
+}
+
+###
+
+### POST promoție pe categorie: 15% reducere la toate băuturile (CategoryId=1)
+### (Type=Quantity, Threshold=1 → se activează de la primul produs din categorie)
+POST {{baseUrl}}/api/promotions
+Content-Type: application/json
+
+{
+  "name": "15% reducere la Băuturi",
+  "type": 0,
+  "threshold": 1,
+  "reward": 1,
+  "rewardValue": 15,
+  "productId": null,
+  "categoryId": 1,
+  "isActive": true
+}
+
+###
+
+### POST promoție pe întreg coșul: 10% reducere dacă total > 50 lei
+### (productId și categoryId sunt null → se aplică global)
+POST {{baseUrl}}/api/promotions
+Content-Type: application/json
+
+{
+  "name": "10% reducere la cumpărături peste 50 lei",
+  "type": 1,
+  "threshold": 50.00,
+  "reward": 1,
+  "rewardValue": 10,
+  "productId": null,
+  "categoryId": null,
+  "isActive": true
+}
+
+###
+
+### POST promoție inactivă (nu se va aplica la calcul coș)
+POST {{baseUrl}}/api/promotions
+Content-Type: application/json
+
+{
+  "name": "Promoție de Black Friday (inactivă)",
+  "type": 1,
+  "threshold": 100.00,
+  "reward": 1,
+  "rewardValue": 20,
+  "productId": null,
+  "categoryId": null,
+  "isActive": false
+}
+
+###
+
+### PUT actualizează promoție (dezactivare)
+PUT {{baseUrl}}/api/promotions/1
+Content-Type: application/json
+
+{
+  "name": "3 Coca Cola + 1 Gratis",
+  "type": 0,
+  "threshold": 3,
+  "reward": 0,
+  "rewardValue": 1,
+  "productId": 1,
+  "categoryId": null,
+  "isActive": false
+}
+
+###
+
+### DELETE șterge promoție
+DELETE {{baseUrl}}/api/promotions/4
+Accept: application/json
+
+###
+
+
+# ============================================================
+#  CART
+# ============================================================
+#
+#  Coșul este global — fără user/session.
+#  Un produs poate apărea o singură dată în coș (one-to-one).
+#  POST /api/cart/items cu același productId → adaugă la cantitate.
+#
+#  Flux de testare recomandat:
+#    1. Adaugă câteva produse
+#    2. GET coș → verifici totalurile și promoțiile aplicate
+#    3. Modifică cantitate
+#    4. Șterge un item
+#    5. Golește tot coșul
+#
+# ============================================================
+
+### GET coșul curent cu totaluri și promoții aplicate
+GET {{baseUrl}}/api/cart
+Accept: application/json
+
+###
+
+### POST adaugă Coca Cola (ProductId=1) × 3 în coș
+### (dacă există deja, cantitatea se adaugă la cea existentă)
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 3
+}
+
+###
+
+### POST adaugă Iaurt natural (ProductId=4) × 2
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": 4,
+  "quantity": 2
+}
+
+###
+
+### POST adaugă Lay's Sare (ProductId=3) × 1
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": 3,
+  "quantity": 1
+}
+
+###
+
+### POST același produs din nou (ProductId=1) → adaugă 2 la cantitate existentă
+### Coca Cola ajunge la 5 bucăți în total
+POST {{baseUrl}}/api/cart/items
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+###
+
+### GET coșul după adăugare — verifică totalurile
+### Așteptat: Coca Cola×5 (29.95), Iaurt×2 (9.00), Lay's×1 (7.99)
+### Subtotal: 46.94 → depinde ce promoții sunt active
+GET {{baseUrl}}/api/cart
+Accept: application/json
+
+###
+
+### PUT modifică cantitatea unui CartItem (itemId=1 → schimbi la 10)
+PUT {{baseUrl}}/api/cart/items/1
+Content-Type: application/json
+
+{
+  "quantity": 10
+}
+
+###
+
+### GET coșul după modificare — verifică noul total
+GET {{baseUrl}}/api/cart
+Accept: application/json
+
+###
+
+### DELETE șterge un singur item din coș (itemId=2)
+DELETE {{baseUrl}}/api/cart/items/2
+Accept: application/json
+
+###
+
+### GET coșul după ștergere — itemul cu id=2 nu mai apare
+GET {{baseUrl}}/api/cart
+Accept: application/json
+
+###
+
+### DELETE șterge item inexistent (trebuie să returneze 404)
+DELETE {{baseUrl}}/api/cart/items/999
+Accept: application/json
+
+###
+
+### DELETE golește tot coșul (toate CartItems sunt șterse)
+DELETE {{baseUrl}}/api/cart
+Accept: application/json
+
+###
+
+### GET coșul după golire — trebuie să returneze items:[], subtotal:0, discount:0, total:0
+GET {{baseUrl}}/api/cart
 Accept: application/json
 
 ###
