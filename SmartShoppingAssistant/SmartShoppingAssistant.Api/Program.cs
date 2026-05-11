@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
+using OpenAI;
+using SmartShoppingAssistant.BusinessLogic.Agents;
 using SmartShoppingAssistant.BusinessLogic.Services;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 using SmartShoppingAssistant.DataAccess;
@@ -28,12 +31,31 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 
 // Register the repository for Promotion entity
-builder.Services.AddScoped<IRepository<Promotion>, BaseRepository<Promotion>>();
+builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
 
 // cart entity
 builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
+
+
+// Agents
+var openAiApiKey = builder.Configuration["OpenAI:ApiKey"]
+                        ?? throw new InvalidOperationException("OpenAI API key is not configured.");
+
+var openAiModel = builder.Configuration["OpenAI:ModelId"] ?? "gpt-4o";
+
+builder.Services.AddSingleton<IChatClient>(
+    new OpenAIClient(openAiApiKey)
+            .GetChatClient(openAiModel)
+            .AsIChatClient()
+            .AsBuilder()
+            .UseFunctionInvocation()
+            .Build()
+            );
+
+builder.Services.AddScoped<IPromotionCheckerAgent, PromotionCheckerAgent>();
+builder.Services.AddScoped<ISuggestionComposerAgent, SuggestionComposerAgent>();
 
 
 var app = builder.Build();

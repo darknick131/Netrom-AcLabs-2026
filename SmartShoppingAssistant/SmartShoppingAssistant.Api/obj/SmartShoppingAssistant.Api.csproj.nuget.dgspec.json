@@ -30,7 +30,6 @@
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
               "C:\\Users\\daria\\Documents\\GitHub\\Personal Projects\\Netrom\\SmartShoppingAssistant\\SmartShoppingAssistant.BusinessLogic\\SmartShoppingAssistant.BusinessLogic.csproj": {
@@ -56,9 +55,24 @@
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.Agents.AI": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            },
+            "Microsoft.Agents.AI.Abstractions": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            },
+            "Microsoft.Agents.AI.OpenAI": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            },
+            "Microsoft.Agents.AI.Workflows": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.6, )"
@@ -541,7 +555,6 @@
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
               "C:\\Users\\daria\\Documents\\GitHub\\Personal Projects\\Netrom\\SmartShoppingAssistant\\SmartShoppingAssistant.DataAccess\\SmartShoppingAssistant.DataAccess.csproj": {
@@ -564,8 +577,17 @@
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
+          "dependencies": {
+            "Microsoft.Agents.AI": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            },
+            "Microsoft.Agents.AI.Workflows": {
+              "target": "Package",
+              "version": "[1.3.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -886,7 +908,6 @@
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -905,7 +926,6 @@
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
@@ -927,6 +947,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[10.0.6, )"
+            },
+            "OpenTelemetry.Api": {
+              "target": "Package",
+              "version": "[1.15.3, )"
             }
           },
           "imports": [

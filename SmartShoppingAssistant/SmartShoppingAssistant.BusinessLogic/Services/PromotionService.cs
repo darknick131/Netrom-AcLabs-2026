@@ -9,7 +9,7 @@ using System.Text;
 
 namespace SmartShoppingAssistant.BusinessLogic.Services
 {
-    public class PromotionService(IRepository<Promotion> promotionRepository) : IPromotionService
+    public class PromotionService(IPromotionRepository promotionRepository) : IPromotionService
     {
         public async Task<PromotionGetDTO> GetByIdAsync(int id)
         {
@@ -41,6 +41,12 @@ namespace SmartShoppingAssistant.BusinessLogic.Services
         public async Task DeleteAsync(int id)
         {
             await promotionRepository.DeleteAsync(id);
+        }
+
+        public async Task<List<PromotionGetDTO>> GetForProductAsync(int productId)
+        {
+            var promotions = await promotionRepository.GetForProductAsync(productId);
+            return promotions.Select(PromotionMapper.ToPromotionGetDTO).ToList();
         }
     }
 }

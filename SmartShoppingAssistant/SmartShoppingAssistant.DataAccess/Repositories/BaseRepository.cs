@@ -4,6 +4,8 @@ namespace SmartShoppingAssistant.DataAccess.Repositories
 {
     public class BaseRepository<TEntity>(SmartShoppingAssistantDbContext context) : IRepository<TEntity> where TEntity : class
     {
+        public IQueryable<TEntity> GetAllAsQueryable() => context.Set<TEntity>().AsQueryable();
+
         public virtual async Task<TEntity> GetByIdAsync(int id)
         {
             var entity = await context.Set<TEntity>().FindAsync(id);

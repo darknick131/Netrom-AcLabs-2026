@@ -30,6 +30,7 @@ namespace SmartShoppingAssistant.DataAccess
             CategorySeed.Seed(modelBuilder);
             ProductSeed.Seed(modelBuilder);
             ProductCategorySeed.Seed(modelBuilder);
+            PromotionSeed.Seed(modelBuilder);
         }
     }
 }
