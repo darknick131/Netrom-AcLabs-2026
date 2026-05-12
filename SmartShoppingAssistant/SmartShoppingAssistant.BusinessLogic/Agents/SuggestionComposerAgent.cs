@@ -9,7 +9,7 @@ namespace SmartShoppingAssistant.BusinessLogic.Agents;
 
 public class SuggestionComposerAgent(IChatClient chatClient, IProductService productService) : ISuggestionComposerAgent
 {
-    public ChatClientAgent Build(string cartJson, string categoriesJson, string promotionAnalysisJson)
+    public ChatClientAgent Build(string cartJson, string categoriesJson, string promotionAnalysisJson = "")
     {
         return new ChatClientAgent(
             chatClient,
@@ -34,8 +34,9 @@ public class SuggestionComposerAgent(IChatClient chatClient, IProductService pro
                         2. Prioritize products that unlock a near-miss deal.
                         3. Also suggest products from the same categories as cart items.
                         4. Return at most 5 suggestions.
+                        5. Provide a summary of your suggestions.
                         """,
-                    ResponseFormat = ChatResponseFormat.ForJsonSchema<SuggestionResponse>(),
+                    ResponseFormat = ChatResponseFormat.ForJsonSchema<AnalysisResponse>(),
                     Tools =
                     [
                         AIFunctionFactory.Create(

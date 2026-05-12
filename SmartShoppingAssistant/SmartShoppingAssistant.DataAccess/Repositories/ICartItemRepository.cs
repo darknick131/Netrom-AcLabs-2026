@@ -10,5 +10,8 @@ namespace SmartShoppingAssistant.DataAccess.Repositories
         Task<CartItem> GetByIdWithProductAsync(int id);
         Task<List<CartItem>> GetAllWithProductsAsync();
         Task DeleteAllAsync();
+
+        // adaugat
+        Task<List<CartItem>> GetAllWithProductWithCategoriesAsync();
     }
 }

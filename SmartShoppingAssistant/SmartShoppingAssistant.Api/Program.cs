@@ -58,6 +58,18 @@ builder.Services.AddScoped<IPromotionCheckerAgent, PromotionCheckerAgent>();
 builder.Services.AddScoped<ISuggestionComposerAgent, SuggestionComposerAgent>();
 
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAnyOrigin",
+        corsPolicyBuilder =>
+        {
+            corsPolicyBuilder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
