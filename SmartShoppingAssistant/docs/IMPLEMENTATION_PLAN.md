@@ -4,14 +4,11 @@
 
 0. [Arhitectura agenților (multi-agent)](#0-arhitectura-agenților-multi-agent)
 1. [Status — ce este gata și ce lipsește](#1-status--ce-este-gata-și-ce-lipsește)
-2. [Fix Program.cs — înregistrări lipsă](#2-fix-programcs--înregistrări-lipsă)
-3. [Seeding Promotions](#3-seeding-promotions)
-4. [DTO-uri — aliniere cu spec-ul](#4-dto-uri--aliniere-cu-spec-ul)
-5. [Actualizare CartService — promoții aplicate](#5-actualizare-cartservice--promoții-aplicate)
-6. [Actualizare PromotionService — filtru activeOnly](#6-actualizare-promotionservice--filtru-activeonly)
-7. [Actualizare Controllere](#7-actualizare-controllere)
-8. [AnalysisController — endpoint nou](#8-analysiscontroller--endpoint-nou)
-9. [Referință — structuri deja implementate](#9-referință--structuri-deja-implementate)
+2. [Secretele API — User Secrets via Visual Studio](#2-secretele-api--user-secrets-via-visual-studio)
+3. [Fix Program.cs — înregistrări lipsă](#3-fix-programcs--înregistrări-lipsă)
+4. [Seeding Promotions](#4-seeding-promotions)
+5. [AnalysisController — endpoint nou](#5-analysiscontroller--endpoint-nou)
+6. [Referință — structuri deja implementate](#6-referință--structuri-deja-implementate)
 
 ---
 
@@ -119,14 +116,11 @@ să fie executat manual. Middleware-ul interceptează aceste cereri și le execu
 | `Agents/ISuggestionComposerAgent.cs` | Implementat |
 | `Models/PromotionAnalysis.cs` | Identic — Deal + PromotionAnalysis cu JsonPropertyName |
 | `Models/SuggestionResponse.cs` | Implementat — ProductSuggestion cu JsonPropertyName |
-| `Tools/ShoppingTools.cs` | Ambele metode implementate (GetPromotionsForProduct + GetProductsByCategory) |
+| `Tools/ShoppingTools.cs` | Ambele metode implementate |
 | `DataAccess/Repositories/PromotionRepository.cs` | GetForProductAsync implementat corect |
 | `Services/PromotionService.GetForProductAsync` | Delegă la repository |
 | `Program.cs` — IChatClient | OpenAI + UseFunctionInvocation configurat |
-| `Controllers/CartController.cs` | CRUD de bază implementat |
-| `Controllers/PromotionController.cs` | CRUD de bază implementat |
-| `Controllers/ProductController.cs` | CRUD + filtru categoryId implementat |
-| `Controllers/CategoryController.cs` | CRUD implementat |
+| Toate CRUD controllers | Cart, Product, Category, Promotion |
 | `DataAccess/Seed/CategorySeed.cs` | 3 categorii seed-uite |
 | `DataAccess/Seed/ProductSeed.cs` | 4 produse seed-uite |
 | `DataAccess/Seed/ProductCategorySeed.cs` | Relații seed-uite |
@@ -135,23 +129,55 @@ să fie executat manual. Middleware-ul interceptează aceste cereri și le execu
 
 | # | Ce lipsește | Fișier | Prioritate |
 |---|---|---|---|
-| 1 | `IPromotionRepository` nu e înregistrat în DI | `Program.cs` | **Critic** — app crasha |
-| 2 | Agenții nu sunt înregistrați în DI | `Program.cs` | **Critic** |
-| 3 | `PromotionSeed.cs` nu există | `DataAccess/Seed/` | Demo fără promoții |
-| 4 | `AnalysisController` nu există | `Api/Controllers/` | Endpoint principal |
-| 5 | `CartItemGetDTO` — câmpuri cu nume greșite | `DTOs/CartItem/CartItemGetDTO.cs` | Frontend |
-| 6 | `CartGetDTO` — lipsesc câmpuri | `DTOs/CartItem/CartGetDTO.cs` | Frontend |
-| 7 | `AppliedPromotionDTO` nu există | `DTOs/CartItem/` | Frontend |
-| 8 | `PromotionGetDTO` — enum ca număr, nu string | `DTOs/Promotions/PromotionGetDTO.cs` | Frontend |
-| 9 | `CartItemMapper` — câmpuri vechi | `Mappers/CartItemMapper.cs` | Depinde de #5 |
-| 10 | `CartService` — nu trackuiește promoțiile aplicate | `Services/CartService.cs` | Depinde de #6 |
-| 11 | `PromotionService.GetAllAsync` — lipsește filtru | `Services/PromotionService.cs` | Frontend |
-| 12 | `CartController` — mutațiile nu returnează coșul | `Controllers/CartController.cs` | Frontend |
-| 13 | `PromotionController.GetAll` — lipsește `activeOnly` | `Controllers/PromotionController.cs` | Frontend |
+| 1 | User Secrets — cheia OpenAI nu e configurată | `secrets.json` via VS | **Critic** — app crasha |
+| 2 | `IPromotionRepository` nu e înregistrat în DI | `Program.cs` | **Critic** — app crasha |
+| 3 | Agenții nu sunt înregistrați în DI | `Program.cs` | **Critic** |
+| 4 | `PromotionSeed.cs` nu există | `DataAccess/Seed/` | Demo fără promoții |
+| 5 | `AnalysisController` nu există | `Api/Controllers/` | Endpoint principal |
 
 ---
 
-## 2. Fix Program.cs — înregistrări lipsă
+## 2. Secretele API — User Secrets via Visual Studio
+
+**User Secrets** = echivalentul `.env` în .NET. Cheile stau în afara repo-ului,
+pe mașina ta locală, niciodată în git.
+
+### Unde se stochează
+
+Windows: `%APPDATA%\Microsoft\UserSecrets\<guid>\secrets.json`
+
+Conținut `secrets.json`:
+```json
+{
+  "OpenAI:ApiKey": "sk-...",
+  "OpenAI:ModelId": "gpt-4o"
+}
+```
+
+Același format ca `appsettings.json` — .NET le suprapune automat la startup în Development.
+
+### Cum deschizi fișierul din Visual Studio
+
+**Solution Explorer → click dreapta pe `SmartShoppingAssistant.Api` → „Manage User Secrets"**
+
+Visual Studio face automat două lucruri:
+1. Adaugă `<UserSecretsId>guid</UserSecretsId>` în `.csproj`
+2. Deschide `secrets.json` pentru editare directă
+
+Adaugi cele două chei și salvezi. Nu apare în git, nu apare în repo.
+
+### De ce `dotnet ef database update` crasha fără cheie
+
+`dotnet ef` pornește `Program.cs` pentru a construi contextul EF. Linia ta:
+```csharp
+?? throw new InvalidOperationException("OpenAI API key is not configured.");
+```
+aruncă excepție înainte să ajungă la `AddDbContext`. Odată cu User Secrets configurate,
+migrarea rulează normal.
+
+---
+
+## 3. Fix Program.cs — înregistrări lipsă
 
 **Fișier:** `SmartShoppingAssistant.Api/Program.cs`
 
@@ -168,29 +194,32 @@ builder.Services.AddScoped<IRepository<Promotion>, BaseRepository<Promotion>>();
 ### Fix — adaugă după înregistrările existente
 
 ```csharp
-// Fix 1: PromotionService cere IPromotionRepository, nu IRepository<Promotion>
+// Fix 1: PromotionService primește IPromotionRepository prin constructor, nu IRepository<Promotion>
 builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
-// Fix 2: Înregistrare agenți prin interfețele lor
+// Fix 2: înregistrare agenți prin interfețele lor
 builder.Services.AddScoped<IPromotionCheckerAgent, PromotionCheckerAgent>();
 builder.Services.AddScoped<ISuggestionComposerAgent, SuggestionComposerAgent>();
 ```
 
+> **Nu șterge** linia cu `IRepository<Promotion>` — `CartService` poate depinde de ea.
 > **De ce prin interfață?** `AnalysisController` cere `IPromotionCheckerAgent` în constructor.
-> DI știe să injecteze `PromotionCheckerAgent` concret pentru că l-ai mapat la interfață.
-> **Nu șterge** linia cu `IRepository<Promotion>` — `CartService` o poate folosi.
+> DI rezolvă implementarea concretă (`PromotionCheckerAgent`) pentru că ai mapat-o la interfață.
 
 ---
 
-## 3. Seeding Promotions
+## 4. Seeding Promotions
 
 **Fișiere:** `DataAccess/Seed/PromotionSeed.cs` (nou) + `SmartShoppingAssistantDbContext.cs` (modificat)
 
 Seeding = date inițiale introduse în BD printr-o **migrare EF Core**.
 Necesare ca agentul să aibă promoții reale de verificat la demo.
-ID-urile referite sunt cele deja seed-uite: Products: 1=Coca Cola, 2=Pepsi, 3=Lay's, 4=Iaurt; Categories: 1=Băuturi, 2=Snacks, 3=Lactate.
 
-### 3a. Fișier nou: `DataAccess/Seed/PromotionSeed.cs`
+ID-urile referite sunt din seeding-ul existent:
+- Products: `1`=Coca Cola, `2`=Pepsi, `3`=Lay's, `4`=Iaurt
+- Categories: `1`=Băuturi, `2`=Snacks, `3`=Lactate
+
+### 4a. Fișier nou: `DataAccess/Seed/PromotionSeed.cs`
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -246,7 +275,7 @@ namespace SmartShoppingAssistant.DataAccess.Seed
 }
 ```
 
-### 3b. Adaugă în `SmartShoppingAssistantDbContext.cs` — `OnModelCreating`
+### 4b. Adaugă în `SmartShoppingAssistantDbContext.cs` — `OnModelCreating`
 
 ```csharp
 CategorySeed.Seed(modelBuilder);
@@ -255,235 +284,24 @@ ProductCategorySeed.Seed(modelBuilder);
 PromotionSeed.Seed(modelBuilder);   // ← adaugă asta
 ```
 
-### 3c. Migrare EF Core
+### 4c. Migrare EF Core
 
-Rulezi în terminal din folderul `SmartShoppingAssistant.Api/`:
+**Necesită User Secrets configurate (pasul 2) înainte de rulare.**
 
 ```bash
+# din folderul SmartShoppingAssistant.Api/
 dotnet ef migrations add PromotionSeed --project ../SmartShoppingAssistant.DataAccess
 dotnet ef database update
 ```
 
 ---
 
-## 4. DTO-uri — aliniere cu spec-ul
-
-### 4a. `CartItemGetDTO` — redenumire câmpuri
-
-**Fișier:** `BusinessLogic/DTOs/CartItem/CartItemGetDTO.cs`
-
-| Câmp actual | Câmp în spec | De ce |
-|---|---|---|
-| `UnitPrice` | `Price` | Spec returnează `"price"`, nu `"unitPrice"` |
-| `ItemTypeTotal` | `Subtotal` | Spec returnează `"subtotal"`, nu `"itemTypeTotal"` |
-
-**Aspect actual:**
-```json
-{ "unitPrice": 5.99, "itemTypeTotal": 35.94 }
-```
-
-**Aspect dorit:**
-```json
-{ "price": 5.99, "subtotal": 35.94 }
-```
-
----
-
-### 4b. `CartGetDTO` — redenumire + câmp nou
-
-**Fișier:** `BusinessLogic/DTOs/CartItem/CartGetDTO.cs`
-
-| Schimbare | De ce |
-|---|---|
-| `Discount` → `TotalDiscount` | Spec folosește `"totalDiscount": -5.99` (valoare negativă) |
-| Adaugă `List<AppliedPromotionDTO> AppliedPromotions` | Spec include lista promoțiilor aplicate individual |
-
-**Aspect dorit:**
-```json
-{
-  "items": [...],
-  "subtotal": 35.94,
-  "appliedPromotions": [
-    { "promotionName": "Buy 5 Get 1 Free Spaghetti", "discount": -5.99 }
-  ],
-  "totalDiscount": -5.99,
-  "total": 29.95
-}
-```
-
----
-
-### 4c. DTO nou: `AppliedPromotionDTO`
-
-**Fișier nou:** `BusinessLogic/DTOs/CartItem/AppliedPromotionDTO.cs`
-
-```csharp
-namespace SmartShoppingAssistant.BusinessLogic.DTOs.CartItem
-{
-    public class AppliedPromotionDTO
-    {
-        public string PromotionName { get; set; } = null!;
-        public decimal Discount { get; set; }   // valoare negativă (ex: -5.99)
-    }
-}
-```
-
-**De ce:** `CartGetDTO` trebuie să returneze lista promoțiilor aplicate individual,
-nu doar suma totală. Frontenderii afișează fiecare reducere separat.
-
----
-
-### 4d. `PromotionGetDTO` — serializare enum ca string
-
-**Fișier:** `BusinessLogic/DTOs/Promotions/PromotionGetDTO.cs`
-
-Adaugă `[JsonConverter(typeof(JsonStringEnumConverter))]` pe proprietățile `Type` și `Reward`.
-
-**Aspect actual:**
-```json
-{ "type": 0, "reward": 0 }
-```
-
-**Aspect dorit:**
-```json
-{ "type": "Quantity", "reward": "FreeItems" }
-```
-
-**De ce:** Frontenderii citesc text, nu numere. Un `0` nu spune nimic; `"Quantity"` este self-documenting.
-
----
-
-## 5. Actualizare CartService — promoții aplicate
-
-**Fișier:** `BusinessLogic/Services/CartService.cs`
-
-**Schimbare:** Metoda `CalculateDiscountAsync` returnează acum `List<AppliedPromotionDTO>`
-în loc de `decimal`. Fiecare promoție activă care generează o reducere e adăugată în
-listă cu `Discount` negativ. `GetCartAsync` calculează `TotalDiscount` ca suma listei.
-
-**Structura nouă:**
-```csharp
-private async Task<List<AppliedPromotionDTO>> CalculatePromotionsAsync(List<CartItem> cartItems, decimal subtotal)
-{
-    var promotions = await promotionRepository.GetAllAsync();
-    var applied = new List<AppliedPromotionDTO>();
-
-    foreach (var p in promotions.Where(p => p.IsActive))
-    {
-        var discount = CalculateSinglePromotion(p, cartItems, subtotal);
-        if (discount > 0)
-        {
-            applied.Add(new AppliedPromotionDTO
-            {
-                PromotionName = p.Name,
-                Discount = -discount   // negativ
-            });
-        }
-    }
-    return applied;
-}
-```
-
-`GetCartAsync` devine:
-```csharp
-var appliedPromotions = await CalculatePromotionsAsync(cartItems, subtotal);
-var totalDiscount = appliedPromotions.Sum(p => p.Discount);
-
-return new CartGetDTO
-{
-    Items = itemDtos,
-    Subtotal = subtotal,
-    AppliedPromotions = appliedPromotions,
-    TotalDiscount = totalDiscount,
-    Total = subtotal + totalDiscount   // subtotal - |discount|
-};
-```
-
-> Actualizează și `CartItemMapper.ToCartItemGetDTO()` — redenumește `UnitPrice → Price` și `ItemTypeTotal → Subtotal`.
-
----
-
-## 6. Actualizare PromotionService — filtru activeOnly
-
-**Fișiere:**
-- `BusinessLogic/Services/Interfaces/IPromotionService.cs`
-- `BusinessLogic/Services/PromotionService.cs`
-
-```csharp
-// interfata
-Task<List<PromotionGetDTO>> GetAllAsync(bool activeOnly = false);
-
-// implementare
-public async Task<List<PromotionGetDTO>> GetAllAsync(bool activeOnly = false)
-{
-    var promotions = await promotionRepository.GetAllAsync();
-    if (activeOnly)
-        promotions = promotions.Where(p => p.IsActive).ToList();
-    return promotions.Select(PromotionMapper.ToPromotionGetDTO).ToList();
-}
-```
-
-**De ce:** Spec-ul arată `GET /api/promotions?activeOnly=true` — clientul (app frontend)
-vede doar promoțiile active, adminul le vede pe toate.
-
----
-
-## 7. Actualizare Controllere
-
-### 7a. `PromotionController.cs`
-
-`GetAll()` primește `[FromQuery] bool activeOnly = false` și îl trimite la service:
-
-```csharp
-[HttpGet]
-public async Task<IActionResult> GetAll([FromQuery] bool activeOnly = false)
-{
-    var promotions = await promotionService.GetAllAsync(activeOnly);
-    return Ok(promotions);
-}
-```
-
----
-
-### 7b. `CartController.cs`
-
-`AddItem`, `UpdateItem` și `RemoveItem` returnează coșul complet (același shape ca `GET /api/cart`).
-**Frontenderii nu mai fac un al doilea request GET după fiecare mutație.**
-
-```csharp
-[HttpPost("items")]
-public async Task<IActionResult> AddItem([FromBody] CartItemCreateDTO dto)
-{
-    await cartService.AddItemAsync(dto);
-    var cart = await cartService.GetCartAsync();
-    return Ok(cart);
-}
-
-[HttpPut("items/{itemId}")]
-public async Task<IActionResult> UpdateItem(int itemId, [FromBody] CartItemUpdateDTO dto)
-{
-    await cartService.UpdateItemQuantityAsync(itemId, dto);
-    var cart = await cartService.GetCartAsync();
-    return Ok(cart);
-}
-
-[HttpDelete("items/{itemId}")]
-public async Task<IActionResult> RemoveItem(int itemId)
-{
-    await cartService.RemoveItemAsync(itemId);
-    var cart = await cartService.GetCartAsync();
-    return Ok(cart);
-}
-```
-
----
-
-## 8. AnalysisController — endpoint nou
+## 5. AnalysisController — endpoint nou
 
 **Fișier nou:** `SmartShoppingAssistant.Api/Controllers/AnalysisController.cs`
 
 Controller-ul **orchestrează** cei doi agenți în secvență și returnează rezultatul combinat.
-Serializarea/deserializarea JSON este făcută explicit — agenții returnează text, nu obiecte tipizate.
+Serializarea/deserializarea JSON este explicită — agenții returnează text, nu obiecte C#.
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
@@ -553,7 +371,7 @@ namespace SmartShoppingAssistant.Api.Controllers
 
 ---
 
-## 9. Referință — structuri deja implementate
+## 6. Referință — structuri deja implementate
 
 ### PromotionCheckerAgent (nu modifica)
 
@@ -707,21 +525,12 @@ public sealed class ProductSuggestion
 
 | Fișier | Acțiune | Status |
 |---|---|---|
-| `Api/Program.cs` | Modificat — fix DI bug + înregistrare agenți | ❌ |
-| `Api/Controllers/CartController.cs` | Modificat — mutații returnează coșul complet | ❌ |
-| `Api/Controllers/PromotionController.cs` | Modificat — adaugă query param `activeOnly` | ❌ |
-| `Api/Controllers/AnalysisController.cs` | **Nou** — endpoint pentru rularea agenților | ❌ |
-| `BusinessLogic/DTOs/CartItem/CartItemGetDTO.cs` | Modificat — redenumire câmpuri | ❌ |
-| `BusinessLogic/DTOs/CartItem/CartGetDTO.cs` | Modificat — redenumire + câmp nou | ❌ |
-| `BusinessLogic/DTOs/CartItem/AppliedPromotionDTO.cs` | **Nou** — DTO pentru promoție aplicată | ❌ |
-| `BusinessLogic/DTOs/Promotions/PromotionGetDTO.cs` | Modificat — enum ca string | ❌ |
-| `BusinessLogic/Mappers/CartItemMapper.cs` | Modificat — redenumire câmpuri | ❌ |
-| `BusinessLogic/Services/CartService.cs` | Modificat — tracked applied promotions | ❌ |
-| `BusinessLogic/Services/Interfaces/IPromotionService.cs` | Modificat — adaugă param `activeOnly` | ❌ |
-| `BusinessLogic/Services/PromotionService.cs` | Modificat — implementare filtru `activeOnly` | ❌ |
-| `DataAccess/Seed/PromotionSeed.cs` | **Nou** — seeding promoții | ❌ |
-| `DataAccess/SmartShoppingAssistantDbContext.cs` | Modificat — apelare `PromotionSeed` | ❌ |
-| `Agents/PromotionCheckerAgent.cs` | ✅ Gata — nu modifica | ✅ |
-| `Agents/SuggestionComposerAgent.cs` | ✅ Gata — nu modifica | ✅ |
-| `Models/SuggestionResponse.cs` | ✅ Gata — nu modifica | ✅ |
-| `Tools/ShoppingTools.cs` | ✅ Gata — nu modifica | ✅ |
+| `secrets.json` (via VS → Manage User Secrets) | Adaugi `OpenAI:ApiKey` + `OpenAI:ModelId` | ❌ |
+| `Api/Program.cs` | Fix DI — `IPromotionRepository` + agenți | ❌ |
+| `DataAccess/Seed/PromotionSeed.cs` | **Nou** — 3 promoții seed-uite | ❌ |
+| `DataAccess/SmartShoppingAssistantDbContext.cs` | Adaugi `PromotionSeed.Seed(modelBuilder)` | ❌ |
+| `Api/Controllers/AnalysisController.cs` | **Nou** — orchestrare agenți | ❌ |
+| `Agents/PromotionCheckerAgent.cs` | ✅ Gata | ✅ |
+| `Agents/SuggestionComposerAgent.cs` | ✅ Gata | ✅ |
+| `Models/SuggestionResponse.cs` | ✅ Gata | ✅ |
+| `Tools/ShoppingTools.cs` | ✅ Gata | ✅ |

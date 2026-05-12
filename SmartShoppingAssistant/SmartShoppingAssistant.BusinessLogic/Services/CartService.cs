@@ -10,7 +10,7 @@ using System.Text;
 
 namespace SmartShoppingAssistant.BusinessLogic.Services
 {
-    public class CartService(ICartItemRepository cartItemRepository, IRepository<Promotion> promotionRepository) : ICartService
+    public class CartService(ICartItemRepository cartItemRepository, IPromotionRepository promotionRepository) : ICartService
     {
         public async Task<CartGetDTO> GetCartAsync()
         {
