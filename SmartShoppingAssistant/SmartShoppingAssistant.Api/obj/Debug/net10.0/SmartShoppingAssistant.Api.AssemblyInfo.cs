@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartShoppingAssistant.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7299bb5e1f76fbcc972455039642586fe8a3ec74")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bc56bfcb28c71491dfa5b548fe0f5e77675eec81")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartShoppingAssistant.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartShoppingAssistant.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
