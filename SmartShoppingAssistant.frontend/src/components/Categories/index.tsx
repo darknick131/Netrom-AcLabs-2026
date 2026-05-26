@@ -11,12 +11,21 @@ import { CategoriesApi } from "../../api/clients/CategoryApiClient";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PageHeader from "../common/PageHeader";
+import CategoryFormDialog from "./CategoryFormDialog";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 function Categories() {
     // state pentru lista de categorii
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const [formOpen, setFormOpen] = useState(false);
+    const [editing, setEditing] = useState<Category | null>(null);
+
+    const [deleting, setDeleting] = useState<Category | null>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
 
     function loadCategories() {
         setLoading(true);
@@ -34,15 +43,28 @@ function Categories() {
     }
 
     function handleAdd() {
-
+        setEditing(null);
+        setFormOpen(true);
     }
-
     function handleEdit(category: Category) {
-
+        setEditing(category);
+        setFormOpen(true);
     }
 
     function handleDeleteClick(category: Category) {
+        setDeleting(category);
+        setConfirmOpen(true);
+    }
 
+    async function handleDelete() {
+        if (deleting === null) return;
+        setConfirmOpen(false);
+        try {
+            await CategoriesApi.remove(deleting.id);
+            loadCategories();
+        } catch (err) {
+            setError((err as Error).message);
+        }
     }
 
     useEffect(() => {
@@ -116,6 +138,25 @@ function Categories() {
                     </Table>
                 </TableContainer>
             )}
+            {formOpen && (
+                <CategoryFormDialog
+                    category={editing}
+                    onClose={() => setFormOpen(false)}
+                    onSaved={() => {
+                        setFormOpen(false);
+                        loadCategories();
+                    }}
+                />
+            )}
+
+            <ConfirmDialog
+                open={confirmOpen}
+                title="Delete category"
+                description={`Are you sure you want to delete "${deleting?.name}"?`}
+                confirmLabel="Delete"
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </Container>
     )
 }
