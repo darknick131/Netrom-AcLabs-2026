@@ -9,9 +9,13 @@ const api = axios.create({
 
 api.interceptors.response.use(
     // success
-    (response) => response,
+    (response) => {
+        console.log(response);
+        return response;
+    },
     // error 
     (error) => {
+        console.log(error);
         const data = error.response?.data
         const message = typeof data === 'string' && data !== '' ? data : error.message || 'Request failed'
         return Promise.reject(new Error(message))

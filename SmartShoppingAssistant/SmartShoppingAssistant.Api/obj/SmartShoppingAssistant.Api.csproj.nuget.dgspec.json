@@ -30,6 +30,7 @@
         },
         "frameworks": {
           "net9.0": {
+            "framework": "net9.0",
             "targetAlias": "net9.0",
             "projectReferences": {
               "C:\\Users\\daria\\Documents\\GitHub\\Personal Projects\\Netrom\\SmartShoppingAssistant\\SmartShoppingAssistant.BusinessLogic\\SmartShoppingAssistant.BusinessLogic.csproj": {
@@ -55,6 +56,7 @@
       },
       "frameworks": {
         "net9.0": {
+          "framework": "net9.0",
           "targetAlias": "net9.0",
           "dependencies": {
             "Microsoft.Agents.AI": {
@@ -145,6 +147,7 @@
         },
         "frameworks": {
           "net9.0": {
+            "framework": "net9.0",
             "targetAlias": "net9.0",
             "projectReferences": {
               "C:\\Users\\daria\\Documents\\GitHub\\Personal Projects\\Netrom\\SmartShoppingAssistant\\SmartShoppingAssistant.DataAccess\\SmartShoppingAssistant.DataAccess.csproj": {
@@ -167,6 +170,7 @@
       },
       "frameworks": {
         "net9.0": {
+          "framework": "net9.0",
           "targetAlias": "net9.0",
           "dependencies": {
             "Microsoft.Agents.AI": {
@@ -224,6 +228,7 @@
         },
         "frameworks": {
           "net9.0": {
+            "framework": "net9.0",
             "targetAlias": "net9.0",
             "projectReferences": {}
           }
@@ -242,6 +247,7 @@
       },
       "frameworks": {
         "net9.0": {
+          "framework": "net9.0",
           "targetAlias": "net9.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
