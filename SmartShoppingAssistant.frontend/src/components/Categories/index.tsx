@@ -1,95 +1,85 @@
-// Categories (componenta principala)
-// |-- PageHeader (Titlu + buton "Add Category")
-// |-- Table (lista de categorii)
-// |-- CategoryFormDialog (dialog pentru add/edit)
-// |-- ConfirmDialog (dialof pentru delete)
-
-import { Box, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, Paper, Alert } from "@mui/material"
-import { useEffect, useState } from "react";
-import type { Category } from "../shared/types/Category";
-import { CategoriesApi } from "../../api/clients/CategoryApiClient";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PageHeader from "../common/PageHeader";
-import CategoryFormDialog from "./CategoryFormDialog";
-import ConfirmDialog from "../common/ConfirmDialog";
+import { Box, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, Paper, Alert } from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Category } from '../shared/types/Category'
+import { CategoriesApi } from '../../api/clients/CategoryApiClient'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import PageHeader from '../common/PageHeader'
+import CategoryFormDialog from './CategoryFormDialog'
+import ConfirmDialog from '../common/ConfirmDialog'
+import EmptyState from '../common/EmptyState'
 
 function Categories() {
-    // state pentru lista de categorii
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [categories, setCategories] = useState<Category[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-    const [formOpen, setFormOpen] = useState(false);
-    const [editing, setEditing] = useState<Category | null>(null);
+    const [formOpen, setFormOpen] = useState(false)
+    const [editing, setEditing] = useState<Category | null>(null)
 
-    const [deleting, setDeleting] = useState<Category | null>(null);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-
+    const [deleting, setDeleting] = useState<Category | null>(null)
+    const [confirmOpen, setConfirmOpen] = useState(false)
 
     function loadCategories() {
-        setLoading(true);
-        setError("");
-        CategoriesApi.getAll().then((data) => {
-            setCategories(data);
-            setError("")
-        })
+        setLoading(true)
+        setError('')
+        CategoriesApi.getAll()
+            .then((data) => {
+                setCategories(data)
+                setError('')
+            })
             .catch((err) => {
-                setError((err as Error).message);
+                setError((err as Error).message)
             })
             .finally(() => {
-                setLoading(false);
+                setLoading(false)
             })
     }
 
     function handleAdd() {
-        setEditing(null);
-        setFormOpen(true);
+        setEditing(null)
+        setFormOpen(true)
     }
+
     function handleEdit(category: Category) {
-        setEditing(category);
-        setFormOpen(true);
+        setEditing(category)
+        setFormOpen(true)
     }
 
     function handleDeleteClick(category: Category) {
-        setDeleting(category);
-        setConfirmOpen(true);
+        setDeleting(category)
+        setConfirmOpen(true)
     }
 
     async function handleDelete() {
-        if (deleting === null) return;
-        setConfirmOpen(false);
+        if (deleting === null) return
+        setConfirmOpen(false)
         try {
-            await CategoriesApi.remove(deleting.id);
-            loadCategories();
+            await CategoriesApi.remove(deleting.id)
+            loadCategories()
         } catch (err) {
-            setError((err as Error).message);
+            setError((err as Error).message)
         }
     }
 
     useEffect(() => {
-        loadCategories();
-    }, []);
+        loadCategories()
+    }, [])
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-            {/*  {} asta e pentru cod de js -> conditional rendering in cazul nostru */}
+        <Container maxWidth='xl' sx={{ py: 4 }}>
             <PageHeader
-                title="Categories"
-                actionLabel="Add Category"
+                title='Categories'
+                actionLabel='Add Category'
                 onAction={handleAdd}
             />
 
-            {
-                error !== "" && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                    </Alert>
-                )
-            }
+            {error !== '' && (
+                <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>
+            )}
 
             {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                     <CircularProgress />
                 </Box>
             ) : (
@@ -99,7 +89,7 @@ function Categories() {
                             <TableRow>
                                 <TableCell>Name</TableCell>
                                 <TableCell>Description</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell align='right'>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -107,20 +97,14 @@ function Categories() {
                                 <TableRow key={category.id} hover>
                                     <TableCell>{category.name}</TableCell>
                                     <TableCell>{category.description}</TableCell>
-                                    <TableCell align="right">
-                                        <Tooltip title="Edit">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleEdit(category)}
-                                            >
+                                    <TableCell align='right'>
+                                        <Tooltip title='Edit'>
+                                            <IconButton color='primary' onClick={() => handleEdit(category)}>
                                                 <EditIcon />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title="Delete">
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleDeleteClick(category)}
-                                            >
+                                        <Tooltip title='Delete'>
+                                            <IconButton color='error' onClick={() => handleDeleteClick(category)}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
@@ -129,8 +113,8 @@ function Categories() {
                             ))}
                             {categories.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={3} align="center">
-                                        No categories yet.
+                                    <TableCell colSpan={3} sx={{ border: 0 }}>
+                                        <EmptyState message='No categories yet.' />
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -138,22 +122,23 @@ function Categories() {
                     </Table>
                 </TableContainer>
             )}
+
             {formOpen && (
                 <CategoryFormDialog
                     category={editing}
                     onClose={() => setFormOpen(false)}
                     onSaved={() => {
-                        setFormOpen(false);
-                        loadCategories();
+                        setFormOpen(false)
+                        loadCategories()
                     }}
                 />
             )}
 
             <ConfirmDialog
                 open={confirmOpen}
-                title="Delete category"
+                title='Delete category'
                 description={`Are you sure you want to delete "${deleting?.name}"?`}
-                confirmLabel="Delete"
+                confirmLabel='Delete'
                 onConfirm={handleDelete}
                 onCancel={() => setConfirmOpen(false)}
             />
@@ -161,4 +146,4 @@ function Categories() {
     )
 }
 
-export default Categories;
+export default Categories

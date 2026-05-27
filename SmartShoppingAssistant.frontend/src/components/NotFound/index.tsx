@@ -17,7 +17,7 @@ function NotFound() {
                 px: 2,
             }}
         >
-            <Typography variant="h1" sx={{ fontSize: '6rem', fontWeight: 700, color: 'primary.main' }}>
+            <Typography variant="h1" sx={{ fontSize: '6rem', fontWeight: 300, color: 'primary.main' }}>
                 404
             </Typography>
             <Typography variant="h5" color="text.secondary">
