@@ -1,68 +1,53 @@
-// Promotions
-// |-- PageHeader (Titlu + buton "Add Promotion")
-// |-- Table (lista de promotii)
-// |-- PromotionFormDialog (dialog pentru add/edit)
-// |-- ConfirmDialog (dialog pentru delete)
-
 import {
-    Alert, Box, Chip, CircularProgress, Container, IconButton,
+    Alert, Box, Chip, CircularProgress, Container, IconButton, InputAdornment,
     Paper, Table, TableBody, TableCell, TableContainer, TableHead,
-    TableRow, Tooltip,
-} from "@mui/material"
-import { useEffect, useState } from "react"
-import type { Promotion } from "../shared/types/Promotion"
-import { PromotionReward, PromotionType } from "../shared/types/Promotion"
-import { PromotionsApi } from "../../api/clients/PromotionApiClient"
-import type { Category } from "../shared/types/Category"
-import type { Product } from "../shared/types/Product"
-import { CategoriesApi } from "../../api/clients/CategoryApiClient"
-import { ProductsApi } from "../../api/clients/ProductApiClient"
-import EditIcon from "@mui/icons-material/Edit"
-import DeleteIcon from "@mui/icons-material/Delete"
+    TablePagination, TableRow, TableSortLabel, TextField, Tooltip,
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Promotion } from '../shared/types/Promotion'
+import { PromotionReward, PromotionType } from '../shared/types/Promotion'
+import type { Category } from '../shared/types/Category'
+import type { Product } from '../shared/types/Product'
+import { PromotionsApi } from '../../api/clients/PromotionApiClient'
+import { CategoriesApi } from '../../api/clients/CategoryApiClient'
+import { ProductsApi } from '../../api/clients/ProductApiClient'
+import { useTableState } from '../../hooks/useTableState'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import SearchIcon from '@mui/icons-material/Search'
 import PageHeader from '../common/PageHeader'
 import PromotionFormDialog from './PromotionFormDialog'
 import ConfirmDialog from '../common/ConfirmDialog'
 import EmptyState from '../common/EmptyState'
 
 const promotionTypeLabel: Record<PromotionType, string> = {
-    [PromotionType.Quantity]: "Quantity",
-    [PromotionType.CartTotal]: "Cart Total",
+    [PromotionType.Quantity]: 'Quantity',
+    [PromotionType.CartTotal]: 'Cart Total',
 }
 
 const promotionRewardLabel: Record<PromotionReward, string> = {
-    [PromotionReward.FreeItems]: "Free Items",
-    [PromotionReward.PercentDiscount]: "% Discount",
+    [PromotionReward.FreeItems]: 'Free Items',
+    [PromotionReward.PercentDiscount]: '% Discount',
 }
 
 function Promotions() {
-    const [promotions, setPromotions] = useState<Promotion[]>([])
+    const { items, totalCount, page, pageSize, search, sortBy, sortDir, loading, error, setPage, setPageSize, setSearch, toggleSort, reload } = useTableState({
+        fetchFn: PromotionsApi.getAll,
+        initialSortBy: 'name',
+    })
+
     const [categories, setCategories] = useState<Category[]>([])
     const [products, setProducts] = useState<Product[]>([])
     const [lookupError, setLookupError] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
-
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<Promotion | null>(null)
-
     const [deleting, setDeleting] = useState<Promotion | null>(null)
     const [confirmOpen, setConfirmOpen] = useState(false)
 
-    function loadPromotions() {
-        setLoading(true)
-        setError("")
-        PromotionsApi.getAll()
-            .then((data) => {
-                setPromotions(data)
-                setError("")
-            })
-            .catch((err) => {
-                setError((err as Error).message)
-            })
-            .finally(() => {
-                setLoading(false)
-            })
-    }
+    useEffect(() => {
+        CategoriesApi.getAll({ pageSize: 50 }).then((r) => setCategories(r.items)).catch(() => setLookupError(true))
+        ProductsApi.getAll({ pageSize: 50 }).then((r) => setProducts(r.items)).catch(() => setLookupError(true))
+    }, [])
 
     function handleAdd() {
         setEditing(null)
@@ -84,37 +69,42 @@ function Promotions() {
         setConfirmOpen(false)
         try {
             await PromotionsApi.remove(deleting.id)
-            loadPromotions()
+            reload()
         } catch (err) {
-            setError((err as Error).message)
+            console.error(err)
         }
     }
 
-    useEffect(() => {
-        loadPromotions()
-        CategoriesApi.getAll().then(setCategories).catch(() => setLookupError(true))
-        ProductsApi.getAll().then(setProducts).catch(() => setLookupError(true))
-    }, [])
-
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-            <PageHeader
-                title="Promotions"
-                actionLabel="Add Promotion"
-                onAction={handleAdd}
+        <Container maxWidth='xl' sx={{ py: 4 }}>
+            <PageHeader title='Promotions' actionLabel='Add Promotion' onAction={handleAdd} />
+
+            <TextField
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='Search promotions...'
+                size='small'
+                sx={{ mb: 2, width: 320 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position='start'>
+                                <SearchIcon fontSize='small' sx={{ color: 'text.secondary' }} />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
             />
 
-            {error !== "" && (
-                <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-            )}
+            {error !== '' && <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>}
             {lookupError && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
+                <Alert severity='warning' sx={{ mb: 2 }}>
                     Could not load products or categories — some selectors in the form will be empty.
                 </Alert>
             )}
 
             {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                     <CircularProgress />
                 </Box>
             ) : (
@@ -122,17 +112,29 @@ function Promotions() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Name</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'name'} direction={sortBy === 'name' ? sortDir : 'asc'} onClick={() => toggleSort('name')}>
+                                        Name
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Type</TableCell>
-                                <TableCell>Threshold</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'threshold'} direction={sortBy === 'threshold' ? sortDir : 'asc'} onClick={() => toggleSort('threshold')}>
+                                        Threshold
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Reward</TableCell>
-                                <TableCell>Value</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'rewardValue'} direction={sortBy === 'rewardValue' ? sortDir : 'asc'} onClick={() => toggleSort('rewardValue')}>
+                                        Value
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Status</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell align='right'>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {promotions.map((promotion) => (
+                            {items.map((promotion) => (
                                 <TableRow key={promotion.id} hover>
                                     <TableCell>{promotion.name}</TableCell>
                                     <TableCell>{promotionTypeLabel[promotion.type]}</TableCell>
@@ -145,32 +147,26 @@ function Promotions() {
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={promotion.isActive ? "Active" : "Inactive"}
-                                            color={promotion.isActive ? "success" : "default"}
-                                            size="small"
+                                            label={promotion.isActive ? 'Active' : 'Inactive'}
+                                            color={promotion.isActive ? 'success' : 'default'}
+                                            size='small'
                                         />
                                     </TableCell>
-                                    <TableCell align="right">
-                                        <Tooltip title="Edit">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleEdit(promotion)}
-                                            >
+                                    <TableCell align='right'>
+                                        <Tooltip title='Edit'>
+                                            <IconButton color='primary' onClick={() => handleEdit(promotion)}>
                                                 <EditIcon />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title="Delete">
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleDeleteClick(promotion)}
-                                            >
+                                        <Tooltip title='Delete'>
+                                            <IconButton color='error' onClick={() => handleDeleteClick(promotion)}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {promotions.length === 0 && (
+                            {items.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={7} sx={{ border: 0 }}>
                                         <EmptyState message='No promotions yet.' />
@@ -179,6 +175,15 @@ function Promotions() {
                             )}
                         </TableBody>
                     </Table>
+                    <TablePagination
+                        component='div'
+                        count={totalCount}
+                        page={page - 1}
+                        rowsPerPage={pageSize}
+                        rowsPerPageOptions={[10, 25, 50]}
+                        onPageChange={(_, p) => setPage(p + 1)}
+                        onRowsPerPageChange={(e) => setPageSize(parseInt(e.target.value, 10))}
+                    />
                 </TableContainer>
             )}
 
@@ -188,18 +193,15 @@ function Promotions() {
                     categories={categories}
                     products={products}
                     onClose={() => setFormOpen(false)}
-                    onSaved={() => {
-                        setFormOpen(false)
-                        loadPromotions()
-                    }}
+                    onSaved={() => { setFormOpen(false); reload() }}
                 />
             )}
 
             <ConfirmDialog
                 open={confirmOpen}
-                title="Delete promotion"
+                title='Delete promotion'
                 description={`Are you sure you want to delete "${deleting?.name}"?`}
-                confirmLabel="Delete"
+                confirmLabel='Delete'
                 onConfirm={handleDelete}
                 onCancel={() => setConfirmOpen(false)}
             />

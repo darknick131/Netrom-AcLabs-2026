@@ -1,40 +1,30 @@
-import { Box, Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, IconButton, CircularProgress, Paper, Alert } from '@mui/material'
-import { useEffect, useState } from 'react'
+import {
+    Alert, Box, CircularProgress, Container, IconButton, InputAdornment,
+    Paper, Table, TableBody, TableCell, TableContainer, TableHead,
+    TablePagination, TableRow, TableSortLabel, TextField, Tooltip,
+} from '@mui/material'
+import { useState } from 'react'
 import type { Category } from '../shared/types/Category'
 import { CategoriesApi } from '../../api/clients/CategoryApiClient'
+import { useTableState } from '../../hooks/useTableState'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import SearchIcon from '@mui/icons-material/Search'
 import PageHeader from '../common/PageHeader'
 import CategoryFormDialog from './CategoryFormDialog'
 import ConfirmDialog from '../common/ConfirmDialog'
 import EmptyState from '../common/EmptyState'
 
 function Categories() {
-    const [categories, setCategories] = useState<Category[]>([])
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
+    const { items, totalCount, page, pageSize, search, sortBy, sortDir, loading, error, setPage, setPageSize, setSearch, toggleSort, reload } = useTableState({
+        fetchFn: CategoriesApi.getAll,
+        initialSortBy: 'name',
+    })
 
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<Category | null>(null)
-
     const [deleting, setDeleting] = useState<Category | null>(null)
     const [confirmOpen, setConfirmOpen] = useState(false)
-
-    function loadCategories() {
-        setLoading(true)
-        setError('')
-        CategoriesApi.getAll()
-            .then((data) => {
-                setCategories(data)
-                setError('')
-            })
-            .catch((err) => {
-                setError((err as Error).message)
-            })
-            .finally(() => {
-                setLoading(false)
-            })
-    }
 
     function handleAdd() {
         setEditing(null)
@@ -56,27 +46,34 @@ function Categories() {
         setConfirmOpen(false)
         try {
             await CategoriesApi.remove(deleting.id)
-            loadCategories()
+            reload()
         } catch (err) {
-            setError((err as Error).message)
+            console.error(err)
         }
     }
 
-    useEffect(() => {
-        loadCategories()
-    }, [])
-
     return (
         <Container maxWidth='xl' sx={{ py: 4 }}>
-            <PageHeader
-                title='Categories'
-                actionLabel='Add Category'
-                onAction={handleAdd}
+            <PageHeader title='Categories' actionLabel='Add Category' onAction={handleAdd} />
+
+            <TextField
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='Search categories...'
+                size='small'
+                sx={{ mb: 2, width: 320 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position='start'>
+                                <SearchIcon fontSize='small' sx={{ color: 'text.secondary' }} />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
             />
 
-            {error !== '' && (
-                <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>
-            )}
+            {error !== '' && <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>}
 
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -87,13 +84,21 @@ function Categories() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Description</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'name'} direction={sortBy === 'name' ? sortDir : 'asc'} onClick={() => toggleSort('name')}>
+                                        Name
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'description'} direction={sortBy === 'description' ? sortDir : 'asc'} onClick={() => toggleSort('description')}>
+                                        Description
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell align='right'>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {categories.map((category) => (
+                            {items.map((category) => (
                                 <TableRow key={category.id} hover>
                                     <TableCell>{category.name}</TableCell>
                                     <TableCell>{category.description}</TableCell>
@@ -111,7 +116,7 @@ function Categories() {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {categories.length === 0 && (
+                            {items.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={3} sx={{ border: 0 }}>
                                         <EmptyState message='No categories yet.' />
@@ -120,6 +125,15 @@ function Categories() {
                             )}
                         </TableBody>
                     </Table>
+                    <TablePagination
+                        component='div'
+                        count={totalCount}
+                        page={page - 1}
+                        rowsPerPage={pageSize}
+                        rowsPerPageOptions={[10, 25, 50]}
+                        onPageChange={(_, p) => setPage(p + 1)}
+                        onRowsPerPageChange={(e) => setPageSize(parseInt(e.target.value, 10))}
+                    />
                 </TableContainer>
             )}
 
@@ -127,10 +141,7 @@ function Categories() {
                 <CategoryFormDialog
                     category={editing}
                     onClose={() => setFormOpen(false)}
-                    onSaved={() => {
-                        setFormOpen(false)
-                        loadCategories()
-                    }}
+                    onSaved={() => { setFormOpen(false); reload() }}
                 />
             )}
 

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SmartShoppingAssistant.BusinessLogic.DTOs.Categories;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Common;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 
 namespace SmartShoppingAssistant.Api.Controllers
@@ -26,17 +26,11 @@ namespace SmartShoppingAssistant.Api.Controllers
 
         // GET /api/categories
         [HttpGet]
-        public async Task<ActionResult<List<CategoryGetDTO>>> GetAll()
+        public async Task<ActionResult<PagedResult<CategoryGetDTO>>> GetAll([FromQuery] QueryParams queryParams)
         {
-            try
-            {
-                var categories = await categoryService.GetAllAsync();
-                return Ok(categories);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
+            if (queryParams.PageSize > 50) queryParams.PageSize = 50;
+            var result = await categoryService.GetAllAsync(queryParams);
+            return Ok(result);
         }
 
         // POST /api/category

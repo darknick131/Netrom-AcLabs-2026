@@ -1,54 +1,40 @@
-// Products
-// |-- PageHeader (Titlu + buton "Add Product")
-// |-- Table (lista de produse)
-// |-- ProductFormDialog (dialog pentru add/edit)
-// |-- ConfirmDialog (dialog pentru delete)
-
 import {
-    Alert, Box, Chip, CircularProgress, Container, IconButton,
+    Alert, Box, Chip, CircularProgress, Container, IconButton, InputAdornment,
     Paper, Table, TableBody, TableCell, TableContainer, TableHead,
-    TableRow, Tooltip,
-} from "@mui/material"
-import { useEffect, useState } from "react"
-import type { Product } from "../shared/types/Product"
-import type { Category } from "../shared/types/Category"
-import { ProductsApi } from "../../api/clients/ProductApiClient"
-import { CategoriesApi } from "../../api/clients/CategoryApiClient"
-import EditIcon from "@mui/icons-material/Edit"
-import DeleteIcon from "@mui/icons-material/Delete"
+    TablePagination, TableRow, TableSortLabel, TextField, Tooltip,
+} from '@mui/material'
+import { useEffect, useState } from 'react'
+import type { Product } from '../shared/types/Product'
+import type { Category } from '../shared/types/Category'
+import { ProductsApi } from '../../api/clients/ProductApiClient'
+import { CategoriesApi } from '../../api/clients/CategoryApiClient'
+import { useTableState } from '../../hooks/useTableState'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import SearchIcon from '@mui/icons-material/Search'
 import PageHeader from '../common/PageHeader'
 import ProductFormDialog from './ProductFormDialog'
 import ConfirmDialog from '../common/ConfirmDialog'
 import EmptyState from '../common/EmptyState'
 
 function Products() {
-    const [products, setProducts] = useState<Product[]>([])
+    const { items, totalCount, page, pageSize, search, sortBy, sortDir, loading, error, setPage, setPageSize, setSearch, toggleSort, reload } = useTableState({
+        fetchFn: ProductsApi.getAll,
+        initialSortBy: 'name',
+    })
+
     const [categories, setCategories] = useState<Category[]>([])
     const [categoriesError, setCategoriesError] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
-
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<Product | null>(null)
-
     const [deleting, setDeleting] = useState<Product | null>(null)
     const [confirmOpen, setConfirmOpen] = useState(false)
 
-    function loadProducts() {
-        setLoading(true)
-        setError("")
-        ProductsApi.getAll()
-            .then((data) => {
-                setProducts(data)
-                setError("")
-            })
-            .catch((err) => {
-                setError((err as Error).message)
-            })
-            .finally(() => {
-                setLoading(false)
-            })
-    }
+    useEffect(() => {
+        CategoriesApi.getAll({ pageSize: 50 })
+            .then((r) => setCategories(r.items))
+            .catch(() => setCategoriesError(true))
+    }, [])
 
     function handleAdd() {
         setEditing(null)
@@ -70,36 +56,42 @@ function Products() {
         setConfirmOpen(false)
         try {
             await ProductsApi.remove(deleting.id)
-            loadProducts()
+            reload()
         } catch (err) {
-            setError((err as Error).message)
+            console.error(err)
         }
     }
 
-    useEffect(() => {
-        loadProducts()
-        CategoriesApi.getAll().then(setCategories).catch(() => setCategoriesError(true))
-    }, [])
-
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
-            <PageHeader
-                title="Products"
-                actionLabel="Add Product"
-                onAction={handleAdd}
+        <Container maxWidth='xl' sx={{ py: 4 }}>
+            <PageHeader title='Products' actionLabel='Add Product' onAction={handleAdd} />
+
+            <TextField
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='Search products...'
+                size='small'
+                sx={{ mb: 2, width: 320 }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position='start'>
+                                <SearchIcon fontSize='small' sx={{ color: 'text.secondary' }} />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
             />
 
-            {error !== "" && (
-                <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-            )}
+            {error !== '' && <Alert severity='error' sx={{ mb: 2 }}>{error}</Alert>}
             {categoriesError && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
+                <Alert severity='warning' sx={{ mb: 2 }}>
                     Could not load categories — the category selector in the form will be empty.
                 </Alert>
             )}
 
             {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                     <CircularProgress />
                 </Box>
             ) : (
@@ -107,47 +99,49 @@ function Products() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Name</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'name'} direction={sortBy === 'name' ? sortDir : 'asc'} onClick={() => toggleSort('name')}>
+                                        Name
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Description</TableCell>
-                                <TableCell>Price (RON)</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={sortBy === 'price'} direction={sortBy === 'price' ? sortDir : 'asc'} onClick={() => toggleSort('price')}>
+                                        Price (RON)
+                                    </TableSortLabel>
+                                </TableCell>
                                 <TableCell>Categories</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell align='right'>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {products.map((product) => (
+                            {items.map((product) => (
                                 <TableRow key={product.id} hover>
                                     <TableCell>{product.name}</TableCell>
                                     <TableCell>{product.description}</TableCell>
                                     <TableCell>{product.price.toFixed(2)}</TableCell>
                                     <TableCell>
-                                        <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+                                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
                                             {product.categories.map((cat) => (
-                                                <Chip key={cat.id} label={cat.name} size="small" />
+                                                <Chip key={cat.id} label={cat.name} size='small' />
                                             ))}
                                         </Box>
                                     </TableCell>
-                                    <TableCell align="right">
-                                        <Tooltip title="Edit">
-                                            <IconButton
-                                                color="primary"
-                                                onClick={() => handleEdit(product)}
-                                            >
+                                    <TableCell align='right'>
+                                        <Tooltip title='Edit'>
+                                            <IconButton color='primary' onClick={() => handleEdit(product)}>
                                                 <EditIcon />
                                             </IconButton>
                                         </Tooltip>
-                                        <Tooltip title="Delete">
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleDeleteClick(product)}
-                                            >
+                                        <Tooltip title='Delete'>
+                                            <IconButton color='error' onClick={() => handleDeleteClick(product)}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Tooltip>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {products.length === 0 && (
+                            {items.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} sx={{ border: 0 }}>
                                         <EmptyState message='No products yet.' />
@@ -156,6 +150,15 @@ function Products() {
                             )}
                         </TableBody>
                     </Table>
+                    <TablePagination
+                        component='div'
+                        count={totalCount}
+                        page={page - 1}
+                        rowsPerPage={pageSize}
+                        rowsPerPageOptions={[10, 25, 50]}
+                        onPageChange={(_, p) => setPage(p + 1)}
+                        onRowsPerPageChange={(e) => setPageSize(parseInt(e.target.value, 10))}
+                    />
                 </TableContainer>
             )}
 
@@ -164,18 +167,15 @@ function Products() {
                     product={editing}
                     categories={categories}
                     onClose={() => setFormOpen(false)}
-                    onSaved={() => {
-                        setFormOpen(false)
-                        loadProducts()
-                    }}
+                    onSaved={() => { setFormOpen(false); reload() }}
                 />
             )}
 
             <ConfirmDialog
                 open={confirmOpen}
-                title="Delete product"
+                title='Delete product'
                 description={`Are you sure you want to delete "${deleting?.name}"?`}
-                confirmLabel="Delete"
+                confirmLabel='Delete'
                 onConfirm={handleDelete}
                 onCancel={() => setConfirmOpen(false)}
             />

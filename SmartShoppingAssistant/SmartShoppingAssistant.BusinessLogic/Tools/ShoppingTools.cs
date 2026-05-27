@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Common;
 using SmartShoppingAssistant.BusinessLogic.DTOs.Product;
 using SmartShoppingAssistant.BusinessLogic.DTOs.Promotions;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
@@ -20,7 +21,8 @@ namespace SmartShoppingAssistant.BusinessLogic.Tools
             [Description("The category ID to get products for")] int categoryId,
             IProductService productService)
         {
-            return await productService.GetAllAsync(categoryId);
+            var result = await productService.GetAllAsync(new QueryParams { CategoryId = categoryId, PageSize = 1000 });
+            return result.Items;
         }
     }
 }

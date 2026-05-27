@@ -1,11 +1,10 @@
-﻿using SmartShoppingAssistant.BusinessLogic.DTOs.Promotions;
+using Microsoft.EntityFrameworkCore;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Common;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Promotions;
 using SmartShoppingAssistant.BusinessLogic.Mappers;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 using SmartShoppingAssistant.DataAccess.Entities;
 using SmartShoppingAssistant.DataAccess.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmartShoppingAssistant.BusinessLogic.Services
 {
@@ -17,10 +16,41 @@ namespace SmartShoppingAssistant.BusinessLogic.Services
             return PromotionMapper.ToPromotionGetDTO(promotion);
         }
 
-        public async Task<List<PromotionGetDTO>> GetAllAsync()
+        public async Task<PagedResult<PromotionGetDTO>> GetAllAsync(QueryParams queryParams)
         {
-            var promotions = await promotionRepository.GetAllAsync();
-            return promotions.Select(PromotionMapper.ToPromotionGetDTO).ToList();
+            var query = promotionRepository.GetAllAsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(queryParams.Search))
+            {
+                var term = queryParams.Search.Trim();
+                query = query.Where(p => p.Name.Contains(term));
+            }
+
+            var allowedSort = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "id", "name", "threshold", "rewardvalue" };
+            var sortBy = allowedSort.Contains(queryParams.SortBy ?? "") ? queryParams.SortBy! : "name";
+            var desc = queryParams.SortDir?.ToLower() == "desc";
+
+            query = sortBy.ToLower() switch
+            {
+                "id"          => desc ? query.OrderByDescending(p => p.Id)          : query.OrderBy(p => p.Id),
+                "threshold"   => desc ? query.OrderByDescending(p => p.Threshold)   : query.OrderBy(p => p.Threshold),
+                "rewardvalue" => desc ? query.OrderByDescending(p => p.RewardValue) : query.OrderBy(p => p.RewardValue),
+                _             => desc ? query.OrderByDescending(p => p.Name)        : query.OrderBy(p => p.Name),
+            };
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((queryParams.Page - 1) * queryParams.PageSize)
+                .Take(queryParams.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<PromotionGetDTO>
+            {
+                Items = items.Select(PromotionMapper.ToPromotionGetDTO).ToList(),
+                TotalCount = totalCount,
+                Page = queryParams.Page,
+                PageSize = queryParams.PageSize,
+            };
         }
 
         public async Task<PromotionGetDTO> CreateAsync(PromotionCreateDTO dto)

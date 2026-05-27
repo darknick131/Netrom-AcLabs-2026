@@ -2,6 +2,7 @@ using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using SmartShoppingAssistant.BusinessLogic.Agents;
 using SmartShoppingAssistant.BusinessLogic.DTOs.CartItem;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Common;
 using SmartShoppingAssistant.BusinessLogic.Mappers;
 using SmartShoppingAssistant.BusinessLogic.Models;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
@@ -137,7 +138,7 @@ namespace SmartShoppingAssistant.BusinessLogic.Services
         public async Task<AnalysisResponse> AnalyzeCartAsync()
         {
             var cart = await cartItemRepository.GetAllWithProductWithCategoriesAsync();
-            var categories = await categoryService.GetAllAsync();
+            var categoriesResult = await categoryService.GetAllAsync(new QueryParams { PageSize = 1000 });
 
             var cartJson = JsonSerializer.Serialize(cart.Select(c => new
             {
@@ -149,7 +150,7 @@ namespace SmartShoppingAssistant.BusinessLogic.Services
                 Categories = c.Product.Categories.Select(cat => new { CategoryId = cat.Id, CategoryName = cat.Name }).ToList(),
             }));
 
-            var categoryJson = JsonSerializer.Serialize(categories.Select(c => new
+            var categoryJson = JsonSerializer.Serialize(categoriesResult.Items.Select(c => new
             {
                 CategoryId = c.Id,
                 CategoryName = c.Name

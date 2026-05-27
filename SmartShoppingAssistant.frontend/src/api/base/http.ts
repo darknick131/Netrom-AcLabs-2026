@@ -23,8 +23,8 @@ api.interceptors.response.use(
 )
 
 export const http = {
-    get: async <T>(path: string): Promise<T> => {
-        const response = await api.get<T>(path)
+    get: async <T>(path: string, params?: Record<string, unknown>): Promise<T> => {
+        const response = await api.get<T>(path, { params })
         return response.data
     },
 

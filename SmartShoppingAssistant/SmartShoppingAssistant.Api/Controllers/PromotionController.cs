@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartShoppingAssistant.BusinessLogic.DTOs.Common;
 using SmartShoppingAssistant.BusinessLogic.DTOs.Promotions;
 using SmartShoppingAssistant.BusinessLogic.Services.Interfaces;
 
@@ -23,10 +24,11 @@ namespace SmartShoppingAssistant.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<PagedResult<PromotionGetDTO>>> GetAll([FromQuery] QueryParams queryParams)
         {
-            var promotions = await promotionService.GetAllAsync();
-            return Ok(promotions);
+            if (queryParams.PageSize > 50) queryParams.PageSize = 50;
+            var result = await promotionService.GetAllAsync(queryParams);
+            return Ok(result);
         }
 
         [HttpPost]

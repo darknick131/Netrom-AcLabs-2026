@@ -1,11 +1,12 @@
-import { http } from "../base/http"
-import type { PromotionInput, PromotionModel } from "../models/PromotionModel"
-import { toPromotion, type Promotion } from "../../components/shared/types/Promotion"
+import { http } from '../base/http'
+import type { PromotionInput, PromotionModel } from '../models/PromotionModel'
+import type { PagedResult, QueryParams } from '../models/PagedResult'
+import { toPromotion, type Promotion } from '../../components/shared/types/Promotion'
 
 export const PromotionsApi = {
-    getAll: async (): Promise<Promotion[]> => {
-        const data = await http.get<PromotionModel[]>('/promotions')
-        return data.map(toPromotion)
+    getAll: async (params?: QueryParams): Promise<PagedResult<Promotion>> => {
+        const data = await http.get<PagedResult<PromotionModel>>('/promotions', params as Record<string, unknown>)
+        return { ...data, items: data.items.map(toPromotion) }
     },
     create: async (data: PromotionInput): Promise<Promotion> => {
         return toPromotion(await http.post<PromotionModel>('/promotions', data))
